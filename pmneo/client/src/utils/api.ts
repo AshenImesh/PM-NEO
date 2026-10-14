@@ -1,6 +1,9 @@
 import type { Project, Column, Task, TaskWithColumn, Priority, Person } from '@types';
 
-const API_BASE = '/api';
+// Local dev: relative '/api' (Vite proxies to localhost:3001).
+// Hosted (Vercel): set VITE_API_URL to your API origin, e.g. https://pmneo-api.onrender.com/api
+const RAW_BASE = (import.meta as unknown as { env?: Record<string, string | undefined> }).env?.VITE_API_URL || '/api';
+const API_BASE = RAW_BASE.replace(/\/$/, '');
 
 async function request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
   const response = await fetch(`${API_BASE}${endpoint}`, {

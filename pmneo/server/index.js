@@ -5,8 +5,10 @@ import fs from 'fs';
 import path from 'path';
 
 const app = express();
-const PORT = 3001;
-const DATA_FILE = path.join(process.cwd(), 'data.json');
+const PORT = process.env.PORT || 3001;
+// Point at a persistent disk in hosting (e.g. Render Disk mount) via DATA_FILE,
+// otherwise a local data.json next to the server (auto-created on first run).
+const DATA_FILE = process.env.DATA_FILE || path.join(process.cwd(), 'data.json');
 
 app.use(cors());
 app.use(express.json());
