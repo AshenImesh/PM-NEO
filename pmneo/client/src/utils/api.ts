@@ -1,7 +1,7 @@
 import type { Project, Column, Task, TaskWithColumn, Priority, Person } from '@types';
 
-// Local dev: relative '/api' (Vite proxies to localhost:3001).
-// Hosted (Vercel): set VITE_API_URL to your API origin, e.g. https://pmneo-api.onrender.com/api
+// API base: relative '/api' by default (local Vite proxy + same-origin
+// Vercel functions). Only set VITE_API_URL for a custom backend origin.
 const RAW_BASE = (import.meta as unknown as { env?: Record<string, string | undefined> }).env?.VITE_API_URL || '/api';
 const API_BASE = RAW_BASE.replace(/\/$/, '');
 
@@ -15,8 +15,12 @@ async function request<T>(endpoint: string, options: RequestInit = {}): Promise<
   });
 
   if (!response.ok) {
-    const error = await response.json().catch(() => ({ error: 'Request failed' }));
-    throw new Error(error.error || `Request failed (${response.status})`);
+    // Try JSON error body first; otherwise show status + a snippet so a
+    // misconfigured deploy (e.g. missing API function) is diagnosable.
+    const error = await response
+      .json()
+      .catch(async () => ({ error: `Request failed (${response.status} on ${endpoint})` }));
+    throw new Error(error.error || `Request failed (${response.status} on ${endpoint})`);
   }
 
   if (response.status === 204) {

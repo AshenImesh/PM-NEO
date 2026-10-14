@@ -15,6 +15,13 @@ app.use(express.json());
 // wrap async handlers so rejections become 500s instead of hanging
 const ah = fn => (req, res, next) => Promise.resolve(fn(req, res, next)).catch(next);
 
+// Health check — open <site>/api/health in a browser to verify the
+// function is deployed and which storage backend is active.
+app.get('/api/health', ah(async (req, res) => {
+  const { storageInfo } = await import('./store.js');
+  res.json({ ok: true, storage: storageInfo(), time: new Date().toISOString() });
+}));
+
 // Projects API
 app.get('/api/projects', ah(async (req, res) => {
   const data = await readData();
